@@ -82,10 +82,10 @@ function ui_setup(job)
               "<td><div id='doubtFramebottombar'></div></td>" +
           "</tr>" + 
           
-          //"<tr>" +
-          //    "<td><a> Jump to : </a><input id='inputFrame'></input><div id='advancedoptions'></div></td>" +
-          //    "<td><div id='submitbar'></div></td>" +
-          //"</tr>" +
+          "<tr>" +
+              "<td><div id='advancedoptions'></div></td>" +
+              "<td><div id='submitbar'></div></td>" +
+          "</tr>" +
 
           // button to specific frame
           //"<tr>" +
