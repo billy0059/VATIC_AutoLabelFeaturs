@@ -105,13 +105,8 @@ function VideoPlayer(handle, job)
         this.frame = Math.min(this.frame, this.job.stop);
         this.frame = Math.max(this.frame, this.job.start);
         
-        if (this.frame in doubtFrame){
-            console.log(doubtFrame[this.frame]);
-            $("#doubtFont").text(doubtFrame[this.frame]);
-        }
-        else{
-            $("#doubtFont").text("");
-        }
+        updateTips(this.frame, doubtFrame)
+
         
         var url = this.job.frameurl(this.frame);
         this.handle.css("background-image", "url('" + url + "')");

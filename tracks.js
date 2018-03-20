@@ -748,17 +748,25 @@ function Track(player, color, position)
                 },
                 stop: function() {
                     me.fixposition();
-                    console.log(this.outerText);
-                    //console.log(jobSlub);
+                    var currentFrame = $('#playerslider').slider("option", "value");
+                    //var currentFraeme = parseInt($(#))
+                    var changedObject = this.outerText;
+                    changedObject = changedObject.split(" ")[0] + changedObject.split(" ")[1]; // delete the space
+                    
+                    if (currentFrame.toString() in doubtFrame){ // if this frame contains suspected objects
+                        //console.log(doubtFrame[currentFrame] + doubtFrame[currentFrame].length);
+                        for (var i=0; i<doubtFrame[currentFrame].length; i++){
+                            if (doubtFrame[currentFrame][i].trim().indexOf(changedObject.trim()) >= 0){
+                                revisionRecord[currentFrame][i] = 1;
+                                updateTips(currentFrame, doubtFrame);
+                            }
+                        }
+                    }
+                    console.log(changedObject, currentFrame);
                     console.log(doubtFrame);
-                    /*for (key in doubtFrame){
-                        console.log(doubtFrame[key]);
-                    }*/
-
-
-
-
-
+                    
+                
+             
                     console.log(me.label);
                     me.recordposition();
                     me.notifyupdate();

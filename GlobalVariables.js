@@ -1,5 +1,28 @@
 var doubtFrame = {};
+var revisionRecord = {};
 var doubtPlayerIndex = 0;
+
+function updateTips(frame, doubtFrame){
+    if (frame in doubtFrame){
+        $("#doubtFont").empty();
+        var content = "";
+        for (var i = 0; i<revisionRecord[frame].length; i++){
+            var object = doubtFrame[frame][i];
+            if( revisionRecord[frame][i] == 0){
+                content += "<font color='red'>" + object + "</font>, ";
+            }
+            else{
+                content += "<font color='green'>" + object + "</font>, ";
+            }
+        }
+        $(content).appendTo($("#doubtFont"));
+    }
+    else{
+
+        $("#doubtFont").empty();
+        $("<font color='blue'>None</font>").appendTo($("#doubtFont"));
+    }
+}
 
 function doubtFrameSet(jobSlug){
     var folderLocation = "DumpFiles0313/";
@@ -62,4 +85,18 @@ function doubtFrameSet(jobSlug){
             }
         }
     }
+    
+    // assgin values to revisionRecord
+    for (var key in doubtFrame){
+        console.log(key);
+        console.log(doubtFrame[key]);
+        /*var array = [];
+        for (var i; i<doubtFrame[key].length; i++){
+            array.push(0);
+        }*/
+        revisionRecord[key] = new Array(doubtFrame[key].length).fill(0);
+    }
+    
+    console.log(revisionRecord);
+    
 }

@@ -65,7 +65,7 @@ function ui_setup(job)
 
     $("<table>" +
         "<tr>" +
-            "<td><div id='instructionsbutton' class='button'>Instructions</div><div id='instructions'><h2>[" + job.slug + "] Current frame : <a id=\"frameDisplay\"></a></h2> <h3 id = 'doubtTitle'>Suspected object(s) : <font id = 'doubtFont' color=\"red\">Car1 (temporarily miss)</font> </h3> Annotate every object, even stationary and obstructed objects, for the entire video.</td>" +
+            "<td><div id='instructionsbutton' class='button'>Instructions</div><div id='instructions'><h2>[" + job.slug + "] Current frame : <a id=\"frameDisplay\"></a></h2> <h3 id = 'doubtTitle'>Suspected object(s) : <div id = 'doubtFont'></div> </h3> (1) Annotate every object, even stationary and obstructed objects, for the entire video.<br/>(2) Or, revise from the given bounding boxes.</td>" +
             "<td><div id='topbar'></div></td>" +
         "</tr>" +
         "<tr>" +
