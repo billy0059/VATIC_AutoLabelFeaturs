@@ -34,7 +34,7 @@ function ui_setup(job)
     //    Get the fisrt appear information of all objects
     var buttonStatement = "";
 
-    console.log("DoubtFrame Dictionart : " + doubtFrame);
+    console.log("DoubtFrame Dictionary : " + doubtFrame);
 
     // for generate the doubtButtonStatement
     var doubtButtonStatement = ""
@@ -76,19 +76,23 @@ function ui_setup(job)
               "<td><div id='bottombar'></div></td>" +
           "</tr>" +
           "<tr>" +
-              "<td><a> Jump to : </a><input id='inputFrame'></input><div id='advancedoptions'></div></td>" +
-              "<td><div id='submitbar'></div></td>" +
+              "<td><h2>Doubt frame bar : </h2></td>" +
           "</tr>" +
+          "<tr>" +
+              "<td><div id='doubtFramebottombar'></div></td>" +
+          "</tr>" + 
+          
+          //"<tr>" +
+          //    "<td><a> Jump to : </a><input id='inputFrame'></input><div id='advancedoptions'></div></td>" +
+          //    "<td><div id='submitbar'></div></td>" +
+          //"</tr>" +
 
           // button to specific frame
-          "<tr>" +
-              "<td>"+
-              "<p><h3 id = 'jumpTitle' ><font color=\"red\">DoubtedFrames : </font></h3></p>" +
-              //job.labels[1] +
-              buttonStatement +
-              doubtButtonStatement+
-              "</td>" +
-          "</tr>" +
+          //"<tr>" +
+          //    "<td>"+
+          //    "<p><h3 id = 'jumpTitle' ><font color=\"red\">DoubtedFrames : </font></h3></p>" +
+          //    "</td>" +
+          //"</tr>" +
 
       "</table>").appendTo(screen).css("width", "100%");
 
@@ -106,9 +110,15 @@ function ui_setup(job)
 
     $("#annotatescreen").css("width", (playerwidth + 205) + "px");
 
-    $("#bottombar").append("<div id='playerslider'></div>");
     $("#bottombar").append("<div class='button' id='rewindbutton'>Rewind</div> ");
+    $("#bottombar").append("<div id='playerslider'></div>");
     $("#bottombar").append("<div class='button' id='playbutton'>Play</div> ");
+    
+    
+    $("#doubtFramebottombar").append("<div class='button' id='doubtprev'>Prev</div>");
+    $("#doubtFramebottombar").append("<div id='doubtplayerslider'></div>");
+    $("#doubtFramebottombar").append("<div class='button' id='doubtnext'>Next</div>");
+    
 
     $("#topbar").append("<div id='newobjectcontainer'>" +
         "<div class='button' id='newobjectbutton'>New Object</div></div>");
@@ -167,31 +177,6 @@ function ui_setup(job)
 function ui_setupbuttons(job, player, tracks)
 {
 
-    // Doubted frame button implementation
-
-    $('.doubt').each(function () {
-        $('#'+this.id).click(function(){
-            console.log(this.id);
-
-            player.pause();
-            player.displace(parseInt(this.id)-player.frame);
-            ui_snaptokeyframe(job, player);
-            //$("h3").text("Jump to the frame that the object first appears : " + "(" + this.value + ", Frame : " + frame + ") last update");
-
-            $("#doubtFont").text($(this).attr('value'));
-            //<h3>Suspected object(s) : <font color=\"red\">Car1 (temporarily miss)</font> </h3>
-        });
-        //console.log(this.id);
-    });
-
-    /*$('#doubtButton').click(function() {
-        console.log("0.0");
-    }).button({
-        icons: {
-            primary: "ui-icon-newwin"
-        }
-    });*/
-
     $("#instructionsbutton").click(function() {
         player.pause();
         ui_showinstructions(job);
@@ -221,6 +206,41 @@ function ui_setupbuttons(job, player, tracks)
             primary: "ui-icon-play"
         }
     });
+    
+    $("#doubtprev").click(function() {
+        if (!$(this).button("option", "disabled"))
+        {
+            if(doubtPlayerIndex > 0){
+                player.pause();
+                player.seek(Object.keys(doubtFrame)[--doubtPlayerIndex]);
+                $("#doubtplayerslider").slider("value", doubtPlayerIndex);
+            }
+        }
+    }).button({
+        disabled: false,
+        icons: {
+            primary: "ui-icon-arrowthick-1-w"
+        }
+    });
+    
+    $("#doubtnext").click(function() {
+        if (!$(this).button("option", "disabled"))
+        {
+            if(doubtPlayerIndex < parseInt(Object.keys(doubtFrame).length) - 1){
+                player.pause();
+                player.seek(Object.keys(doubtFrame)[++doubtPlayerIndex]);
+                $("#doubtplayerslider").slider("value", doubtPlayerIndex);
+            }
+            //console.log(doubtPlayerIndex);
+        }
+    }).button({
+        disabled: false,
+        icons: {
+            primary: "ui-icon-arrowthick-1-e"
+        }
+    });
+    
+    
 
     $("#rewindbutton").click(function() {
         if (ui_disabled) return;
@@ -331,37 +351,6 @@ function ui_setupbuttons(job, player, tracks)
 function ui_setupkeyboardshortcuts(job, player)
 {
 
-    var folderLocation = "DumpFiles0313/";
-    var fileNameFirstAppear = job.slug + "FirstAppear.txt";
-    var fistAppearLines = $.ajax({type: "GET", url: folderLocation+fileNameFirstAppear, async: false}).responseText;
-    console.log(fistAppearLines);
-    fistAppearLines = fistAppearLines.split('\n');
-    console.log(fistAppearLines)
-
-    /*for (var i =0; i<(fistAppearLines.length - 1); i++){
-        objectID = parseInt(fistAppearLines[i].split(' ')[0]) + 1;
-        objectName = fistAppearLines[i].split(' ')[1].replace(/\"/g, "");
-        buttonID = "jumpTo" + String(objectID);
-        appearFrame = parseInt(fistAppearLines[i].split(' ')[2]);
-
-        console.log(appearFrame);
-
-        firstFrame.push(appearFrame);
-
-        $("#"+buttonID).click(function() {
-                var skip = 0;
-                var frame = parseInt($(this).attr('class'));
-                console.log(frame);
-                console.log(this.value);
-                $("h3").text("Jump to the frame that the object first appears : " + "(" + this.value + ", Frame : " + frame + ") last update");
-                player.pause();
-                player.displace(frame-player.frame);
-                ui_snaptokeyframe(job, player);
-          }
-        );
-    }*/
-
-
     $(window).keypress(function(e) {
         console.log("Key press: " + e.keyCode);
 
@@ -457,7 +446,7 @@ function ui_setupslider(player)
             //eventlog("slider", "Seek to " + ui.value);
         }
     });
-
+    console.log("-----------------------------player.job.start" + player.job.start + "------------------player.job.stop" + player.job.stop);
     /*slider.children(".ui-slider-handle").hide();*/
     slider.children(".ui-slider-range").css({
         "background-color": "#868686",
@@ -471,6 +460,28 @@ function ui_setupslider(player)
 
     player.onupdate.push(function() {
         slider.slider({value: player.frame});
+        //$("#doubtplayerslider").slider({value: player.frame});
+    });
+    
+    $("#doubtplayerslider").slider({
+                           range : "min",
+                           min : 0,
+                           max : Object.keys(doubtFrame).length,
+                           slide: function(event, ui) {
+                              if (ui.value < Object.keys(doubtFrame).length){
+                              player.pause();
+                              player.seek(Object.keys(doubtFrame)[ui.value]);
+                              doubtPlayerIndex = ui.value;
+                              }
+                           }
+    });
+    $("#doubtplayerslider").children(".ui-slider-range").css({
+        "background-color": "#7CFC00",
+        "background-image": "none"});
+    $("#doubtplayerslider").css({
+        marginTop: "6px",
+        width: parseInt(slider.parent().css("width")) - 200 + "px",
+        float: "right"
     });
 }
 
@@ -530,6 +541,9 @@ function ui_setupclickskip(job, player, tracks, objectui)
     });
 
     $("#playerslider").bind("slidestop", function() {
+        ui_snaptokeyframe(job, player);
+    });
+    $("#doubtplayerslider").bind("slidestop", function() {
         ui_snaptokeyframe(job, player);
     });
 }

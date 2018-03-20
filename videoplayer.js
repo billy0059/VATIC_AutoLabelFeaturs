@@ -81,10 +81,10 @@ function VideoPlayer(handle, job)
      * Seeks to a specific video frame.
      */
     this.seek = function(target)
-    {
+    { 
         this.frame = target;
         this.updateframe();
-	$("#frameDisplay").html(this.frame);
+        $("#frameDisplay").html(this.frame);
     }
 
     /*
@@ -104,7 +104,15 @@ function VideoPlayer(handle, job)
     {
         this.frame = Math.min(this.frame, this.job.stop);
         this.frame = Math.max(this.frame, this.job.start);
-
+        
+        if (this.frame in doubtFrame){
+            console.log(doubtFrame[this.frame]);
+            $("#doubtFont").text(doubtFrame[this.frame]);
+        }
+        else{
+            $("#doubtFont").text("");
+        }
+        
         var url = this.job.frameurl(this.frame);
         this.handle.css("background-image", "url('" + url + "')");
 

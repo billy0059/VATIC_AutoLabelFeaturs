@@ -1,5 +1,5 @@
 var doubtFrame = {};
-
+var doubtPlayerIndex = 0;
 
 function doubtFrameSet(jobSlug){
     var folderLocation = "DumpFiles0313/";
