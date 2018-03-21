@@ -383,7 +383,6 @@ function TrackCollection(player, job)
     {
         for (var i in this.tracks)
         {
-            console.log("-----------------------------.......................");
             this.tracks[i].recordposition();
         }
     }
@@ -498,9 +497,6 @@ function Track(player, color, position)
      */
     this.recordposition = function()
     {
-
-        console.log("Test..");
-        console.log(this.pollposition());
         this.journal.mark(this.player.frame, this.pollposition());
         this.journal.artificialright = this.journal.rightmost();
     }
@@ -702,6 +698,7 @@ function Track(player, color, position)
      */
     this.draw = function(frame, position)
     {
+        
         if (this.handle == null)
         {
             this.handle = $('<div class="boundingbox"><div class="boundingboxtext"></div></div>');
@@ -729,6 +726,20 @@ function Track(player, color, position)
                     }
                 },
                 stop: function() {
+                    var currentFrame = $('#playerslider').slider("option", "value");
+                    //var currentFraeme = parseInt($(#))
+                    var changedObject = this.outerText;
+                    changedObject = changedObject.split(" ")[0] + changedObject.split(" ")[1]; // delete the space
+                    
+                    if (currentFrame.toString() in doubtFrame){ // if this frame contains suspected objects
+                        //console.log(doubtFrame[currentFrame] + doubtFrame[currentFrame].length);
+                        for (var i=0; i<doubtFrame[currentFrame].length; i++){
+                            if (doubtFrame[currentFrame][i].trim().indexOf(changedObject.trim()) >= 0){
+                                revisionRecord[currentFrame][i] = 1;
+                                updateTips(currentFrame, doubtFrame);
+                            }
+                        }
+                    }
                     me.fixposition();
                     me.recordposition();
                     me.notifyupdate();
@@ -764,10 +775,7 @@ function Track(player, color, position)
                     }
                     console.log(changedObject, currentFrame);
                     console.log(doubtFrame);
-                    
-                
-             
-                    console.log(me.label);
+                    me.fixposition();
                     me.recordposition();
                     me.notifyupdate();
                     eventlog("draggable", "Drag-n-drop a box");

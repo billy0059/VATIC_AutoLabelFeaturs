@@ -442,6 +442,22 @@ function TrackObject(job, player, container, color)
 
 
         $("#trackobject" + this.id + "lost").click(function() {
+            // me.id + 1 = number
+            console.log("TEST", me.id);
+            
+            var changedObject = (me.id + 1).toString();
+            var currentFrame = $('#playerslider').slider("option", "value");
+            
+            if (currentFrame.toString() in doubtFrame){ // if this frame contains suspected objects
+                //console.log(doubtFrame[currentFrame] + doubtFrame[currentFrame].length);
+                for (var i=0; i<doubtFrame[currentFrame].length; i++){
+                    if (doubtFrame[currentFrame][i].trim().indexOf(changedObject.trim()) >= 0){
+                        revisionRecord[currentFrame][i] = 1;
+                        updateTips(currentFrame, doubtFrame);
+                    }
+                }
+            }
+            
             me.player.pause();
 
             var outside = $(this).is(":checked");
@@ -458,6 +474,19 @@ function TrackObject(job, player, container, color)
             }
         });
         $("#trackobject" + this.id + "occluded").click(function() {
+            var changedObject = (me.id + 1).toString();
+            var currentFrame = $('#playerslider').slider("option", "value");
+            
+            if (currentFrame.toString() in doubtFrame){ // if this frame contains suspected objects
+                //console.log(doubtFrame[currentFrame] + doubtFrame[currentFrame].length);
+                for (var i=0; i<doubtFrame[currentFrame].length; i++){
+                    if (doubtFrame[currentFrame][i].trim().indexOf(changedObject.trim()) >= 0){
+                        revisionRecord[currentFrame][i] = 1;
+                        updateTips(currentFrame, doubtFrame);
+                    }
+                }
+            }
+            
             me.player.pause();
 
             var occlusion = $(this).is(":checked");

@@ -42,7 +42,7 @@ function VideoPlayer(handle, job)
         {
             console.log("Playing...");
 	    console.log(this.frame);
-	    $("#frameDisplay").html(this.frame);
+	    
             this.paused = false;
             this.interval = window.setInterval(function() {
                 if (me.frame >= me.job.stop)
@@ -68,7 +68,7 @@ function VideoPlayer(handle, job)
         {
             console.log("Paused.");
             console.log(this.frame);
-            $("#frameDisplay").html(this.frame);
+            
             this.paused = true;
             window.clearInterval(this.interval);
             this.interval = null;
@@ -84,7 +84,7 @@ function VideoPlayer(handle, job)
     { 
         this.frame = target;
         this.updateframe();
-        $("#frameDisplay").html(this.frame);
+        
     }
 
     /*
@@ -94,7 +94,7 @@ function VideoPlayer(handle, job)
     {
         this.frame += delta;
         this.updateframe();
-	$("#frameDisplay").html(this.frame);
+
     }
 
     /*
@@ -105,7 +105,8 @@ function VideoPlayer(handle, job)
         this.frame = Math.min(this.frame, this.job.stop);
         this.frame = Math.max(this.frame, this.job.start);
         
-        updateTips(this.frame, doubtFrame)
+        updateTips(this.frame, doubtFrame);
+        $("#frameDisplay").html(this.frame);
 
         
         var url = this.job.frameurl(this.frame);

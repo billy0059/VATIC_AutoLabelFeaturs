@@ -9,10 +9,10 @@ function updateTips(frame, doubtFrame){
         for (var i = 0; i<revisionRecord[frame].length; i++){
             var object = doubtFrame[frame][i];
             if( revisionRecord[frame][i] == 0){
-                content += "<font color='red'>" + object + "</font>, ";
+                content += "<font style=\" font-family:'monospace'\" color='red'>" + object + "</font>, ";
             }
             else{
-                content += "<font color='green'>" + object + "</font>, ";
+                content += "<font style=\" font-family:'monospace'\" color='green'>" + object + "</font>, ";
             }
         }
         $(content).appendTo($("#doubtFont"));
@@ -20,7 +20,7 @@ function updateTips(frame, doubtFrame){
     else{
 
         $("#doubtFont").empty();
-        $("<font color='blue'>None</font>").appendTo($("#doubtFont"));
+        $("<font style=\" font-family:'monospace'\" color='blue'>None</font>").appendTo($("#doubtFont"));
     }
 }
 
