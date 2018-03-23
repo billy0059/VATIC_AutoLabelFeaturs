@@ -26,7 +26,10 @@ function Job(data)
 function job_import(data)
 {
     var job = new Job();
-    doubtFrameSet(data["slug"]);
+    console.log(data["slug"]);
+    if(data["slug"].indexOf("Raw") == -1){
+        doubtFrameSet(data["slug"]);
+    }
     job.slug = data["slug"]; // name of the job
     job.start = parseInt(data["start"]);
     job.stop = parseInt(data["stop"]);
