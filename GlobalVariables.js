@@ -87,7 +87,9 @@ function doubtFrameSet(jobSlug){
     }
     
     // assgin values to revisionRecord
+    var framesCount = 0;
     for (var key in doubtFrame){
+        framesCount++;
         console.log(key);
         console.log(doubtFrame[key]);
         /*var array = [];
@@ -96,7 +98,7 @@ function doubtFrameSet(jobSlug){
         }*/
         revisionRecord[key] = new Array(doubtFrame[key].length).fill(0);
     }
-    
+    console.log(framesCount);
     console.log(revisionRecord);
     
 }
