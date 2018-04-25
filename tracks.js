@@ -356,11 +356,59 @@ function TrackCollection(player, job)
      * Updates boxes with the given frame
      */
     this.update = function(frame)
-    {
+    {  
+        $('#mergeaArea').empty();
         for (var i in this.tracks)
         {
             this.tracks[i].draw(frame);
+            //console.log(this.tracks[i].estimate(frame)); // this.tracks[i].journal.annotations[0].xtl, ytl, xbr, ybr,
+            //console.log(frame);
+            for (var j in this.tracks){
+                if(this.tracks[i].estimate(frame).outside != true && this.tracks[j].estimate(frame).outside != true && (this.tracks[i].label == this.tracks[j].label)){
+                    var overlap = this.overlapRatio(parseInt(this.tracks[i].estimate(frame).xtl),
+                                                    parseInt(this.tracks[i].estimate(frame).ytl),
+                                                    parseInt(this.tracks[i].estimate(frame).xbr),
+                                                    parseInt(this.tracks[i].estimate(frame).ybr),
+                                                    parseInt(this.tracks[j].estimate(frame).xtl),
+                                                    parseInt(this.tracks[j].estimate(frame).ytl),
+                                                    parseInt(this.tracks[j].estimate(frame).xbr),
+                                                    parseInt(this.tracks[j].estimate(frame).ybr),
+                                                    );
+                    //console.log(overlap);
+                    if(overlap>0.5 && overlap<1 ){ // consider as the same object, ask if to merge 
+                        console.log(overlap);
+                        console.log(this.tracks[i].label);
+                        console.log(this.tracks[j].label);
+                        console.log(this.tracks[i].estimate(frame));
+                        console.log(this.tracks[j].estimate(frame));
+                        console.log(frame);
+                        
+                        var $input = $('<input type="button" value="Merge" />');
+                        $input.appendTo($("#mergeaArea"));
+                        
+                        //$(#mergeaArea)
+                    }
+                }
+                
+            }
         }
+    }
+    
+    this.overlapRatio = function(K, L, M, N, P, Q, R, S){
+      	var area1 = (M - K) * (N - L);
+      	var area2 = (R - P) * (S - Q);
+      	var overlap;
+      	if ((P>=M) || (Q>=N) || (K>=R) || (L>=S)){
+      		overlap = 0;
+      	}
+      	else{
+      		    blX = Math.max(K, P);
+              blY = Math.max(L, Q);
+              trX = Math.min(M, R);
+              trY = Math.min(N, S);
+              overlap = (trX - blX) * (trY - blY);
+      	}
+      	return overlap / (area1 + area2 - overlap);
     }
 
     /*

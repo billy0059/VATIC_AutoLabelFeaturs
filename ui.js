@@ -86,6 +86,11 @@ function ui_setup(job)
               "<td><div id='advancedoptions'></div></td>" +
               "<td><div id='submitbar'></div></td>" +
           "</tr>" +
+          
+          "<tr>" +
+              "<td><div id='mergeaArea'></div></td>" +
+              "<td><div id='waiting'></div></td>" +
+          "</tr>" +
 
           // button to specific frame
           //"<tr>" +
