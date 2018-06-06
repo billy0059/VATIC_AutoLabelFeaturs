@@ -1,14 +1,15 @@
 function TrackObjectUI(button, container, videoframe, job, player, tracks)
 {
     var me = this;
-
+    
     this.button = button;
     this.container = container;
     this.videoframe = videoframe;
     this.job = job;
     this.player = player;
     this.tracks = tracks;
-
+	
+    console.log(this.tracks.tracks.length);
     this.drawer = new BoxDrawer(videoframe);
 
     this.counter = 0;
@@ -191,6 +192,11 @@ function TrackObjectUI(button, container, videoframe, job, player, tracks)
     {
         return this.availcolors[this.availcolors.push(this.availcolors.shift()) - 1];
     }
+	
+	
+	this.player.play(); // Scan whole video once when finishing loading.
+
+    console.log(caseMerge1);
 }
 
 function TrackObject(job, player, container, color)

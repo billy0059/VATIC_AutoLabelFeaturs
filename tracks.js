@@ -257,7 +257,7 @@ var track_collection_dump = null;
 function TrackCollection(player, job)
 {
     var me = this;
-
+    //console.log(player);
     this.player = player;
     this.job = job;
     this.tracks = [];
@@ -352,48 +352,924 @@ function TrackCollection(player, job)
         }
     }
 
-    /*
-     * Updates boxes with the given frame
-     */
-    this.update = function(frame)
-    {  
-        $('#mergeaArea').empty();
-        for (var i in this.tracks)
-        {
-            this.tracks[i].draw(frame);
-            //console.log(this.tracks[i].estimate(frame)); // this.tracks[i].journal.annotations[0].xtl, ytl, xbr, ybr,
-            //console.log(frame);
-            for (var j in this.tracks){
-                if(this.tracks[i].estimate(frame).outside != true && this.tracks[j].estimate(frame).outside != true && (this.tracks[i].label == this.tracks[j].label)){
-                    var overlap = this.overlapRatio(parseInt(this.tracks[i].estimate(frame).xtl),
-                                                    parseInt(this.tracks[i].estimate(frame).ytl),
-                                                    parseInt(this.tracks[i].estimate(frame).xbr),
-                                                    parseInt(this.tracks[i].estimate(frame).ybr),
-                                                    parseInt(this.tracks[j].estimate(frame).xtl),
-                                                    parseInt(this.tracks[j].estimate(frame).ytl),
-                                                    parseInt(this.tracks[j].estimate(frame).xbr),
-                                                    parseInt(this.tracks[j].estimate(frame).ybr),
-                                                    );
-                    //console.log(overlap);
-                    if(overlap>0.5 && overlap<1 ){ // consider as the same object, ask if to merge 
-                        console.log(overlap);
-                        console.log(this.tracks[i].label);
-                        console.log(this.tracks[j].label);
-                        console.log(this.tracks[i].estimate(frame));
-                        console.log(this.tracks[j].estimate(frame));
-                        console.log(frame);
-                        
-                        var $input = $('<input type="button" value="Merge" />');
-                        $input.appendTo($("#mergeaArea"));
-                        
-                        //$(#mergeaArea)
+	this.merge = function(track1, track2){
+		console.log(track1 + track1);
+	}
+
+    var linear = function (anno1, anno2){
+
+        var coordinateX_1 = [], coordinateY_1 = [];
+        var boxArea = [];
+        for (var i in anno1){
+            if( (anno1[i].occluded == false) && (anno1[i].outside == false)){
+                var midx = (parseInt(anno1[i].xtl) + parseInt(anno1[i].xbr)) / 2.0;
+                var midy = (parseInt(anno1[i].ytl) + parseInt(anno1[i].ybr)) / 2.0;
+                var area = (parseInt(anno1[i].xbr) - parseInt(anno1[i].xtl)) * (parseInt(anno1[i].ybr) - parseInt(anno1[i].ytl));
+                var tempX = [i, midx];
+                var tempY = [i, midy];
+                var tempArea = [i, area];
+                //console.log(temp);
+                coordinateX_1.push(tempX);
+                coordinateY_1.push(tempY);
+                boxArea.push(tempArea);
+            }
+        }
+        //console.log("X array " + coordinateX_1);
+        //console.log("Y array " + coordinateY_1);
+
+        /*var regressionX_1 = methods.linear(coordinateX_1, { order: 2, precision: 2, period: null });
+        var regressionY_1 = methods.linear(coordinateY_1, { order: 2, precision: 2, period: null });
+
+        console.log(regressionX_1);
+        console.log(regressionY_1);*/
+
+
+
+        //var coordinateX_2 = [], coordinateY_2 = [];
+        for (var i in anno2){
+            if( (anno2[i].occluded == false) && (anno2[i].outside == false)){
+                var midx = (parseInt(anno2[i].xtl) + parseInt(anno2[i].xbr)) / 2.0;
+                var midy = (parseInt(anno2[i].ytl) + parseInt(anno2[i].ybr)) / 2.0;
+                var area = (parseInt(anno2[i].xbr) - parseInt(anno2[i].xtl)) * (parseInt(anno2[i].ybr) - parseInt(anno2[i].ytl));
+                var tempX = [i, midx];
+                var tempY = [i, midy];
+                var tempArea = [i, area];
+                //console.log(temp);
+                //coordinateX_2.push(tempX);
+                //coordinateY_2.push(tempY);
+
+                coordinateX_1.push(tempX);
+                coordinateY_1.push(tempY);
+                boxArea.push(tempArea);
+            }
+        }
+        //console.log("X array " + coordinateX_1);
+        //console.log("Y array " + coordinateY_1);
+
+        /*
+        var regressionX_2 = methods.linear(coordinateX_2, { order: 2, precision: 2, period: null });
+        var regressionY_2 = methods.linear(coordinateY_2, { order: 2, precision: 2, period: null });
+        console.log(regressionX_2);
+        console.log(regressionY_2);*/
+
+
+
+        var regressionX_1 = methods.linear(coordinateX_1, { order: 4, precision: 3, period: null });
+        var regressionY_1 = methods.linear(coordinateY_1, { order: 4, precision: 3, period: null });
+        var regression_area = methods.linear(boxArea, { order: 4, precision: 3, period: null });
+
+        if (regressionX_1.r2 > 0.5 && regressionY_1.r2 > 0.5 && regression_area.r2 > 0.5){
+            //caseMerge2++;
+            console.log(regressionX_1);
+            console.log(regressionY_1);
+            console.log(regression_area);
+            return 1;
+        }
+        return 0;
+
+    }
+
+
+	var mergeFunc = function (track1, track2){
+		console.log(me.tracks);
+
+	    console.log(me.tracks[track1].journal.annotations);
+		console.log(me.tracks[track2].journal.annotations);
+
+		var anno1 = Object.keys(me.tracks[track1].journal.annotations);
+		var anno2 = Object.keys(me.tracks[track2].journal.annotations);
+
+		var track1start = parseInt(anno1[1]);
+		var track2start = parseInt(anno2[1]);
+
+        //console.log(me.tracks[track1].journal.annotations);
+        //console.log(anno1);
+
+
+		if (track1start < track2start){
+			console.log("track" + track1 + " is going to merge track" + track2 + "..." );
+			for(var frameNum in anno2){
+				if (anno1.includes(parseInt(anno2[frameNum]).toString()) || anno1.includes((parseInt(anno2[frameNum])+1).toString()) ||
+                    anno1.includes((parseInt(anno2[frameNum])+2).toString()) || anno1.includes((parseInt(anno2[frameNum])+3).toString()) ||
+                    anno1.includes((parseInt(anno2[frameNum])-1).toString()) || anno1.includes((parseInt(anno2[frameNum])-2).toString()) ||
+                    anno1.includes((parseInt(anno2[frameNum])-3).toString()) )
+				{
+					console.log("annotations is within blow radius ... abandon");
+				}
+				else{
+					console.log("merging ...");
+					console.log(anno2[frameNum]);
+                    me.tracks[track1].journal.annotations[anno2[frameNum]] = me.tracks[track2].journal.annotations[anno2[frameNum]];
+                    console.log(me.tracks[track2].journal.annotations[anno2[frameNum]]);
+					// wait for implemntation, done
+				}
+			}
+            console.log(me.tracks[track1].journal.annotations);
+			me.tracks[track2].remove(); // remove track2
+			console.log(me.tracks[track2]);
+            //me.tracks.splice(track2, 1);
+		}
+
+		else {
+			console.log("track" + track2 + " is going to merge track" + track1 + "..." );
+            for(var frameNum in anno1){
+                if (anno2.includes(parseInt(anno1[frameNum]).toString()) || anno2.includes((parseInt(anno1[frameNum])+1).toString()) ||
+                    anno2.includes((parseInt(anno1[frameNum])+2).toString()) || anno2.includes((parseInt(anno1[frameNum])+3).toString()) ||
+                    anno2.includes((parseInt(anno1[frameNum])-1).toString()) || anno2.includes((parseInt(anno1[frameNum])-2).toString()) ||
+                    anno2.includes((parseInt(anno1[frameNum])-3).toString()))
+                {
+                    console.log("annotations is within blow radius ... abandon");
+                }
+                else{
+                    console.log("merging ...");
+                    console.log(anno1[frameNum]);
+                    me.tracks[track2].journal.annotations[anno1[frameNum]] = me.tracks[track1].journal.annotations[anno1[frameNum]];
+                    console.log(me.tracks[track1].journal.annotations[anno1[frameNum]]);
+                    // wait for implemntation, done
+                }
+            }
+            console.log(me.tracks[track2].journal.annotations);
+            me.tracks[track1].remove(); // remove track1
+            console.log(me.tracks[track1]);
+            //me.tracks.splice(track1, 1);
+		}
+    }
+
+    this.mergeEventDetect1 = function(frame, i, j){
+        //console.log(frame);
+        if(stageButton == 1){
+            //stage ++;
+            stageButton = 0;
+            //$("#nextStage").empty();
+            $("#nextStage").click(function() {
+                stageButton = 1;
+                stage ++;
+                console.log("test" + stage);
+                console.log(frame);
+
+                $(this).button({
+                    //disabled: true,
+                    icons: {
+                        primary: "ui-icon-arrowthick-1-e"
                     }
+                });
+
+                $("#mergeTable").empty();
+                $("#stageText").text("STAGE2 : Same object? Press \"Merge\" button to merge them. (" + caseMerge2 + " cases detected.)");
+                mergeLog = {};
+                me.player.seek(0);
+                //me.player.play();
+
+            }).button({
+                //disabled: true,
+                icons: {
+                    primary: "ui-icon-arrowthick-1-e"
+                }
+            });
+        }
+
+        if(this.tracks[i].estimate(frame).outside != true && this.tracks[j].estimate(frame).outside != true && (this.tracks[i].label == this.tracks[j].label)){
+            var overlap = this.overlapRatio(parseInt(this.tracks[i].estimate(frame).xtl),
+                                            parseInt(this.tracks[i].estimate(frame).ytl),
+                                            parseInt(this.tracks[i].estimate(frame).xbr),
+                                            parseInt(this.tracks[i].estimate(frame).ybr),
+                                            parseInt(this.tracks[j].estimate(frame).xtl),
+                                            parseInt(this.tracks[j].estimate(frame).ytl),
+                                            parseInt(this.tracks[j].estimate(frame).xbr),
+                                            parseInt(this.tracks[j].estimate(frame).ybr)
+                                            );
+                    //console.log(overlap);
+
+            if(overlap>0.5 && overlap<1 && mergeLog[i.toString()+"_"+j.toString()] != 1 && mergeLog[j.toString()+"_"+i.toString()] != 1){  // consider as the same object, ask if to merge
+
+
+                $("#stageText").text("STAGE1 : Same object? Press \"Merge\" button to merge them. (" + caseMerge1 + " cases detected.)");
+
+                mergeLog[i.toString()+"_"+j.toString()] = 1;  // avoid repeat
+
+                console.log(overlap);
+                console.log(this.tracks[i].label);
+                console.log(this.tracks[j].label);
+                console.log(this.tracks[i].estimate(frame));
+                console.log(this.tracks[j].estimate(frame));
+                console.log(frame);
+
+                var buttonID = "track" + i.toString() + "_" + j.toString(); // track1_5
+
+                var toFrame = "To" + frame;
+
+                var frameURL = job.frameurl(frame);
+                //console.log(frameURL);
+
+                var track1Img = frame+"_"+i.toString();
+                var track2Img = frame+"_"+j.toString();
+
+                if(caseMerge1 %2 == 0){
+                    merge1ID = "merge" + (caseMerge1/2).toString();
+                    $("#mergeTable").append("<tr id=\"" + merge1ID + "\" style= \"height : 100px; \"></tr>");
+                }
+
+                //$("#mergeTable").append("<tr id=\"" + merge1ID + "\" style= \"height : 100px; \"></tr>");
+
+
+
+
+                $("#" + merge1ID ).append("<td>" + job.labels[this.tracks[i].label] + (parseInt(i)+1).toString() + "<div id=\"" + track1Img +"\" style= \"width : 100px; height : 100px; overflow: hidden\"></div> </td>");
+                $("#" + merge1ID ).append("<td>" + job.labels[this.tracks[j].label] + (parseInt(j)+1).toString() + "<div id=\"" + track2Img +"\" style= \"width : 100px; height : 100px; overflow: hidden\"></div> </td>");
+
+                //$("#" + buttonID + "frame"+ frame ).append("<td border=\"0\"><div class='button' id='"+ toFrame +"' style = \"margin-top : 0\">" + toFrame + "</div></td>");
+
+                $("#" + merge1ID ).append("<td><div class = \"btn-group\"><button id='"+ toFrame +"'>" + toFrame + "</button> <button id='"+buttonID+"_"+frame+"''>Merge</button></div></td>");
+
+                var scaleX = 100 / (parseInt(this.tracks[i].estimate(frame).xbr) - parseInt(this.tracks[i].estimate(frame).xtl));
+                var scaleY = 100 / (parseInt(this.tracks[i].estimate(frame).ybr) - parseInt(this.tracks[i].estimate(frame).ytl));
+                var style = "style = \"width :"+ (scaleX*parseInt(job.width)).toString() +"; height:" +(scaleY*parseInt(job.height)).toString() +"; margin-left : "+ (-Math.round(scaleX * parseInt(this.tracks[i].estimate(frame).xtl))).toString()+"; margin-top : " + (-Math.round(scaleY * parseInt(this.tracks[i].estimate(frame).ytl))).toString()+";\"";
+
+                $('<img class ="'+i.toString()+'"src="'+ frameURL +'"'+style +' >').load(function() {    // load i
+                    $(this).appendTo("#" + track1Img );
+                });
+
+                scaleX = 100 / (parseInt(this.tracks[j].estimate(frame).xbr) - parseInt(this.tracks[j].estimate(frame).xtl));
+                scaleY = 100 / (parseInt(this.tracks[j].estimate(frame).ybr) - parseInt(this.tracks[j].estimate(frame).ytl));
+                style = "style = \"width :"+ (scaleX*parseInt(job.width)).toString() +"; height:" +(scaleY*parseInt(job.height)).toString() +"; margin-left : "+ (-Math.round(scaleX * parseInt(this.tracks[j].estimate(frame).xtl))).toString()+"; margin-top : " + (-Math.round(scaleY * parseInt(this.tracks[j].estimate(frame).ytl))).toString()+";\"";
+
+                $('<img class ="'+j.toString()+'"src="'+ frameURL +'"'+style +' >').load(function() {   // load j
+                    $(this).appendTo("#" + track2Img );
+                });
+
+
+                $("#"+toFrame).click(function() { // change to that frame
+                    me.player.seek($(this).attr('id').split("o")[1]);
+                    console.log($(this).attr('id'));
+                    $('html, body').scrollTop(0);
+                });
+
+                $("#"+buttonID+"_"+frame).click(function() { // merge implementation
+                    var track1 = $(this).attr('id').split("k")[1].split("_")[0];
+                    var track2 = $(this).attr('id').split("k")[1].split("_")[1];
+                    console.log(track1 + track2);
+                    mergeFunc(track1,track2);
+                    caseMerge1--;
+
+                    $(this).prop('disabled',true); // disable the button.
+                    $(this).text("Done");
+                    merge1Count++;
+
+                    //console.log(i.toString() + j.toString());
+                });
+                caseMerge1++;
+
+            }
+        }
+
+    }
+
+    this.mergeEventDetect2 = function(frame, i, j){
+
+        if(stageButton == 1){
+            $("#nextStage").unbind();
+            stageButton = 0;
+            //$("#nextStage").empty();
+            //$("#nextStage .ui-button-text").text("Nexxxxxt Stage (current " + stage + ")");
+            $("#nextStage").click(function() {
+                stageButton = 1;
+                stage ++;
+                console.log("test2");
+                $(this).empty();
+                //$(this).text("Nexxxxxt Stage (current " + stage + ")");
+                $(this).button({
+                    //disabled: true,
+                    icons: {
+                        primary: "ui-icon-arrowthick-1-e"
+                    }
+                });
+
+                $("#mergeTable").empty();
+                $("#stageText").text("STAGE3 : FP? Press \"FP\" button to delete them. (" + caseFP + " cases detected.)");
+                me.player.seek(0);
+                me.player.play();
+            }).button({
+                //disabled: true,
+                icons: {
+                    primary: "ui-icon-arrowthick-1-e"
+                }
+            });
+        }
+
+        //console.log(me.tracks[track1].journal.annotations);
+        //console.log(me.tracks[track2].journal.annotations);
+
+        var anno1 = Object.keys(this.tracks[i].journal.annotations);
+        var anno2 = Object.keys(this.tracks[j].journal.annotations);
+
+
+
+
+        //console.log("!!");
+        if(frame == 0 && !(this.tracks[i].deleted) && !(this.tracks[j].deleted) &&(this.tracks[i].label == this.tracks[j].label) && (mergeLog[i.toString()+"_"+j.toString()] != 1) && (mergeLog[j.toString()+"_"+i.toString()] != 1)) {
+            mergeLog[i.toString()+"_"+j.toString()] = 1;
+            //console.log(i.toString() + " " + j.toString());
+
+            if (   ((i<j) && (parseInt(anno1[anno1.length - 2]) > parseInt(anno2[1])))
+                || ((i>j) && (parseInt(anno2[anno2.length - 2]) > parseInt(anno1[1])))
+                || (i == j)
+              ){
+                console.log(anno1);
+                console.log(anno2);
+                return 0;
+            }
+
+            /*for(var frameNum in anno2){
+
+
+
+                if((  anno1.includes(parseInt(anno2[frameNum]).toString())
+                   || anno1.includes((parseInt(anno2[frameNum])+1).toString())
+                   || anno1.includes((parseInt(anno2[frameNum])+2).toString())
+                   || anno1.includes((parseInt(anno2[frameNum])+3).toString())
+                   || anno1.includes((parseInt(anno2[frameNum])-1).toString())
+                   || anno1.includes((parseInt(anno2[frameNum])-2).toString())
+                   || anno1.includes((parseInt(anno2[frameNum])-3).toString())
+                   )
+                   && (parseInt(frameNum) != 0)
+                   && (parseInt(frameNum) != (anno2.length - 1)) )
+                {
+                    return 0;
+                }
+            }*/
+            console.log(i.toString() + " " + j.toString());
+            console.log("-------------------------------");
+
+
+            console.log(anno1);
+            console.log(anno2);
+
+            console.log(caseMerge2);
+
+            if (linear(this.tracks[i].journal.annotations, this.tracks[j].journal.annotations) == 1){
+                $("#stageText").text("STAGE2 : Same object? Press \"Merge\" button to merge them. (" + (caseMerge2 + 1) + " cases detected.)");
+                if (caseMerge2 % 2 == 0){
+                    merge2ID = "merge" + (caseMerge2/2).toString();
+                    $("#mergeTable").append("<tr id=\"" + merge2ID + "\" style= \"height : 100px; \"></tr>");
+                }
+                var buttonID = "track" + i.toString() + "_" + j.toString(); // track1_5
+
+                var track1Img = caseMerge2.toString() + "path_" + i.toString();
+                var track2Img = caseMerge2.toString() + "path_" + j.toString();
+
+                var toFrame1 = caseMerge2.toString() + "To" + anno1[1];
+                var toFrame2 = caseMerge2.toString() + "To" + anno2[1];
+                var toFrame1Text = "To" + anno1[1];
+                var toFrame2Text = "To" + anno2[1];
+
+
+
+                $("#" + merge2ID ).append("<td>" + job.labels[this.tracks[i].label] + (parseInt(i)+1).toString() + "_" + anno1[1] + "<div id=\"" + track1Img +"\" style= \"width : 100px; height : 100px; overflow: hidden\"></div> </td>");
+                $("#" + merge2ID ).append("<td>......</td>");
+                $("#" + merge2ID ).append("<td>" + job.labels[this.tracks[j].label] + (parseInt(j)+1).toString() + "_" + anno2[1] + "<div id=\"" + track2Img +"\" style= \"width : 100px; height : 100px; overflow: hidden\"></div> </td>");
+
+                $("#" + merge2ID ).append("<td><div class = \"btn-group\"><button id='"+ toFrame1 +"'>" + toFrame1Text + "</button><button id='"+ toFrame2 +"'>" + toFrame2Text + "</button> <button id='"+buttonID+"''>Merge</button></div></td>");
+
+                var frameURL = job.frameurl(anno1[1]);
+
+                var scaleX = 100 / (parseInt(this.tracks[i].estimate(anno1[1]).xbr) - parseInt(this.tracks[i].estimate(anno1[1]).xtl));
+                var scaleY = 100 / (parseInt(this.tracks[i].estimate(anno1[1]).ybr) - parseInt(this.tracks[i].estimate(anno1[1]).ytl));
+                var style = "style = \"width :"+ (scaleX*parseInt(job.width)).toString() +"; height:" +(scaleY*parseInt(job.height)).toString() +"; margin-left : "+ (-Math.round(scaleX * parseInt(this.tracks[i].estimate(anno1[1]).xtl))).toString()+"; margin-top : " + (-Math.round(scaleY * parseInt(this.tracks[i].estimate(anno1[1]).ytl))).toString()+";\"";
+
+                $('<img class ="'+i.toString()+'"src="'+ frameURL +'"'+style +' >').load(function() {    // load i
+                    $(this).appendTo("#" + track1Img );
+                });
+
+                frameURL = job.frameurl(anno2[1]);
+
+                scaleX = 100 / (parseInt(this.tracks[j].estimate(anno2[1]).xbr) - parseInt(this.tracks[j].estimate(anno2[1]).xtl));
+                scaleY = 100 / (parseInt(this.tracks[j].estimate(anno2[1]).ybr) - parseInt(this.tracks[j].estimate(anno2[1]).ytl));
+                style = "style = \"width :"+ (scaleX*parseInt(job.width)).toString() +"; height:" +(scaleY*parseInt(job.height)).toString() +"; margin-left : "+ (-Math.round(scaleX * parseInt(this.tracks[j].estimate(anno2[1]).xtl))).toString()+"; margin-top : " + (-Math.round(scaleY * parseInt(this.tracks[j].estimate(anno2[1]).ytl))).toString()+";\"";
+
+                $('<img class ="'+j.toString()+'"src="'+ frameURL +'"'+style +' >').load(function() {    // load j
+                    $(this).appendTo("#" + track2Img );
+                });
+
+
+                $("#"+toFrame1).click(function() { // change to that frame
+
+                    me.player.seek($(this).attr('id').split("o")[1]);
+                    console.log($(this).attr('id'));
+                    $('html, body').scrollTop(0);
+                });
+                $("#"+toFrame2).click(function() { // change to that frame
+
+                    me.player.seek($(this).attr('id').split("o")[1]);
+                    console.log($(this).attr('id'));
+                    $('html, body').scrollTop(0);
+                });
+
+                $("#"+buttonID).click(function() { // change to that frame
+                    mergeFunc(i,j);
+                    $(this).prop('disabled',true); // disable the button.
+                    $(this).text("Done");
+                    caseMerge2 = 0;
+                    mergeLog = {};
+                    $("#mergeTable").empty();
+                    me.player.seek(0);
+                    merge2Count++;
+
+                });
+
+
+                caseMerge2++;
+            }
+        }
+    }
+
+
+    this.FPEvent = function(frame, i){
+      if(stageButton == 1){
+          $("#nextStage").unbind();
+          stageButton = 0;
+          //$("#nextStage").empty();
+          //$("#nextStage .ui-button-text").text("Nexxxxxt Stage (current " + stage + ")");
+          $("#nextStage").click(function() {
+              disappear = disappearDoubt(me.tracks);
+              console.log(disappear);
+              stageButton = 1;
+              stage ++;
+              console.log("test2");
+              $(this).empty();
+              //$(this).text("Nexxxxxt Stage (current " + stage + ")");
+              $(this).button({
+                  //disabled: true,
+                  icons: {
+                      primary: "ui-icon-arrowthick-1-e"
+                  }
+              });
+
+              $("#mergeTable").empty();
+              $("#stageText").text("STAGE4 : Exist? Press \"Recover\" button to recover them. (" + caseDisappear + " cases detected.)");
+
+
+              me.player.seek(0);
+              me.player.play();
+          }).button({
+              //disabled: true,
+              icons: {
+                  primary: "ui-icon-arrowthick-1-e"
+              }
+          });
+      }
+      if (this.tracks[i].estimate(frame).outside != true && appearLog[i.toString()] != 1 && !(this.tracks[i].deleted)) {
+          appearLog[i.toString()] = 1;
+          console.log(this.tracks[i]);
+          console.log(frame);
+          var frameURL = job.frameurl(frame);
+          var buttonID = "track" + i.toString(); // track1
+          var toFrame = i + "To" + frame;
+
+          var trackImg = frame+"_"+i.toString();
+          if (caseFP % 5 == 0){
+              fpTrID = "FP"+caseFP.toString();
+              $("#mergeTable").append("<tr id=\"" + fpTrID + "\" style= \"height : 100px; \"></tr>"); //track1frame1
+          }
+          $("#" + fpTrID ).append("<td>" + job.labels[this.tracks[i].label] + (parseInt(i)+1).toString() + "<div id=\"" + trackImg +"\" style= \"width : 100px; height : 100px; overflow: hidden\"></div> </td>");
+
+          $("#" + fpTrID ).append("<td><div class = \"btn-group\"><button id='"+ toFrame +"'>To" + frame + "</button> <button id='"+buttonID+"_"+frame+"''>FP</button></div></td>");
+
+          var scaleX = 100 / (parseInt(this.tracks[i].estimate(frame).xbr) - parseInt(this.tracks[i].estimate(frame).xtl));
+          var scaleY = 100 / (parseInt(this.tracks[i].estimate(frame).ybr) - parseInt(this.tracks[i].estimate(frame).ytl));
+          var style = "style = \"width :"+ (scaleX*parseInt(job.width)).toString() +"; height:" +(scaleY*parseInt(job.height)).toString() +"; margin-left : "+ (-Math.round(scaleX * parseInt(this.tracks[i].estimate(frame).xtl))).toString()+"; margin-top : " + (-Math.round(scaleY * parseInt(this.tracks[i].estimate(frame).ytl))).toString()+";\"";
+          $('<img class ="'+i.toString()+'"src="'+ frameURL +'"'+style +' >').load(function() {    // load i
+              $(this).appendTo("#" + trackImg );
+          });
+
+          $("#"+toFrame).click(function() { // change to that frame
+              me.player.seek($(this).attr('id').split("o")[1]);
+              console.log($(this).attr('id'));
+              $('html, body').scrollTop(0);
+          });
+
+          $("#"+buttonID+"_"+frame).click(function(){
+              console.log("test");
+              me.tracks[i].remove();
+              //me.tracks.splice(i, 1);
+              console.log(me.tracks);
+
+              $(this).prop('disabled',true); // disable the button.
+              $(this).text("Done");
+              fpCount++;
+          });
+
+          caseFP++;
+          $("#stageText").text("STAGE3 : FP? Press \"FP\" button to delete them. (" + caseFP + " cases detected.)");
+        }
+    }
+
+
+
+    this.disappearEvent = function(frame, i){
+    	if(stageButton == 1){
+          $("#nextStage").unbind();
+          stageButton = 0;
+          //$("#nextStage").empty();
+          //$("#nextStage .ui-button-text").text("Nexxxxxt Stage (current " + stage + ")");
+          $("#nextStage").click(function() {
+              //disappear = disappearDoubt(me.tracks);
+              //console.log(disappear);
+              stageButton = 1;
+              stage ++;
+              console.log("test2");
+              $(this).empty();
+              //$(this).text("Nexxxxxt Stage (current " + stage + ")");
+              $(this).button({
+                  //disabled: true,
+                  icons: {
+                      primary: "ui-icon-arrowthick-1-e"
+                  }
+              });
+
+              $("#mergeTable").empty();
+              $("#stageText").text("STAGE5 : You might want to resize/relocate these objects.");
+
+
+              me.player.seek(0);
+              me.player.play();
+            }).button({
+              //disabled: true,
+                icons: {
+                    primary: "ui-icon-arrowthick-1-e"
+                }
+            });
+        }
+
+        var trackImg1;
+        if (me.tracks[i].deleted){
+        	return;
+        }
+
+        if(disappear[i.toString()].includes(frame.toString()) && DAlog[i.toString() + "_" + frame] != 1 ) {
+
+
+            $("#stageText").text("STAGE4 : Exist? Press \"Recover\" button to recover them. (" + (caseDisappear+1) + " cases detected.)");
+                    //console.log(me.tracks);
+            trackImg1 =  i.toString() + "_" + frame;
+            DAlog[trackImg1] = 1;
+            var frameURL = job.frameurl(frame);
+            console.log(frameURL);
+
+            var toFrame = "path_" + i.toString() + "_To" + frame;
+            if (caseDisappear % 5 == 0){
+                  DATrID = "DA"+caseDisappear.toString();
+                  $("#mergeTable").append("<tr id=\"" + DATrID + "\" style= \"height : 100px; \"></tr>"); //track1frame1
+            }
+            var disappearID = "path_" + i.toString() + "_" + frame;
+            $("#" + DATrID ).append("<td>" + job.labels[me.tracks[i].label] + (parseInt(i)+1).toString() + "<div id=\"" + trackImg1 +"\" style= \"width : 100px; height : 100px; overflow: hidden\"></div> </td>");
+
+            $("#" + DATrID ).append("<td><div class = \"btn-group\"><button id='"+ toFrame +"'>To" + frame + "</button> <button id='"+disappearID+"_"+frame+"''>Recover</button></div></td>");
+
+            var keys = Object.keys(me.tracks[i].journal.annotations);
+            console.log(keys);
+            var DSIndex = keys.indexOf(frame.toString());
+            console.log(DSIndex);
+
+            var ratio = (parseInt(keys[DSIndex]) - parseInt(keys[DSIndex-1])) / (parseInt(keys[DSIndex+1]) - parseInt(keys[DSIndex-1]));
+
+            var xbr = parseInt(parseInt(me.tracks[i].estimate(keys[DSIndex-1]).xbr) + (parseInt(me.tracks[i].estimate(keys[DSIndex+1]).xbr) - parseInt(me.tracks[i].estimate(keys[DSIndex-1]).xbr)) * ratio);
+            var xtl = parseInt(parseInt(me.tracks[i].estimate(keys[DSIndex-1]).xtl) + (parseInt(me.tracks[i].estimate(keys[DSIndex+1]).xtl) - parseInt(me.tracks[i].estimate(keys[DSIndex-1]).xtl)) * ratio);
+            var ybr = parseInt(parseInt(me.tracks[i].estimate(keys[DSIndex-1]).ybr) + (parseInt(me.tracks[i].estimate(keys[DSIndex+1]).ybr) - parseInt(me.tracks[i].estimate(keys[DSIndex-1]).ybr)) * ratio);
+            var ytl = parseInt(parseInt(me.tracks[i].estimate(keys[DSIndex-1]).ytl) + (parseInt(me.tracks[i].estimate(keys[DSIndex+1]).ytl) - parseInt(me.tracks[i].estimate(keys[DSIndex-1]).ytl)) * ratio);
+            console.log(parseInt(me.tracks[i].estimate(keys[DSIndex-1]).xbr));
+            console.log(xbr);
+            console.log(xtl);
+            console.log(ybr);
+            console.log(ytl);
+            console.log(parseInt(me.tracks[i].estimate(keys[DSIndex+1]).xbr));
+            console.log("--------");
+
+
+            console.log(xtl);
+            console.log(ybr);
+            console.log(ytl);
+
+
+            var scaleX = 100 / (xbr-xtl);
+            var scaleY = 100 / (ybr-ytl);
+            var style = "style = \"width :"+ (scaleX*parseInt(job.width)).toString() +"; height:" +(scaleY*parseInt(job.height)).toString() +"; margin-left : "+ (-Math.round(scaleX * xtl)).toString()+"; margin-top : " + (-Math.round(scaleY * ytl)).toString()+";\"";
+            $('<img class ="'+i.toString()+'"src="'+ frameURL +'"'+style +' >').load(function() {    // load i
+                $(this).appendTo("#" + trackImg1 );
+            });
+
+            $("#"+toFrame).click(function() { // change to that frame
+              me.player.seek($(this).attr('id').split("o")[1]);
+              console.log($(this).attr('id'));
+              $('html, body').scrollTop(0);
+            });
+
+            $("#"+disappearID+"_"+frame).click(function() { // change to that frame
+                me.tracks[i].journal.annotations[frame].outside = false;
+                console.log(me.tracks[i].journal.annotations[frame]);
+                me.player.seek(frame);
+                $(this).prop('disabled',true); // disable the button.
+                $(this).text("Done");
+                DACount++;
+            });
+
+            caseDisappear++;
+        }
+    }
+
+    this.displacementEvent = function(frame, i){
+    	if(stageButton == 1){
+            $("#nextStage").unbind();
+            stageButton = 0;
+            $("#nextStage").click(function() {
+                stage ++;
+                $(this).empty();
+                //$(this).text("Nexxxxxt Stage (current " + stage + ")");
+                $(this).button({
+                  //disabled: true,
+                    icons: {
+                      primary: "ui-icon-arrowthick-1-e"
+                    }
+                });
+
+	            $("#mergeTable").empty();
+	            $("#stageText").text("All stages are finished, now you can create bounding boxes with unannotated objects.");
+	            console.log("merge1Count : " + merge1Count);
+	            console.log("merge2Count : " + merge2Count);
+	            console.log("fpCount : " + fpCount);
+	            console.log("DACount : " + DACount);
+	            console.log("DPCount : " + DPCount);
+	            me.player.seek(0);
+	            me.player.play();
+	            $("#nextStage").button("option", "disabled", true);
+	            $("#nextStage").unbind();
+            }).button({
+                icons: {
+                    primary: "ui-icon-arrowthick-1-e"
+                }
+            });
+        }
+
+        if ( (frame == 0) && (!me.tracks[i].deleted) && DPlog[i] != 1){ //this.tracks[i].journal.annotations
+        	DPlog[i] = 1;
+        	var coordinateX = [], coordinateY = [];
+            var boxArea = [];
+            var anno1 = this.tracks[i].journal.annotations;
+            for (var j in anno1){
+	            if( (anno1[j].occluded == false) && (anno1[j].outside == false)){
+	                var midx = (parseInt(anno1[j].xtl) + parseInt(anno1[j].xbr)) / 2.0;
+	                var midy = (parseInt(anno1[j].ytl) + parseInt(anno1[j].ybr)) / 2.0;
+	                var area = (parseInt(anno1[j].xbr) - parseInt(anno1[j].xtl)) * (parseInt(anno1[j].ybr) - parseInt(anno1[j].ytl));
+	                var tempX = [j, midx];
+	                var tempY = [j, midy];
+	                var tempArea = [j, area];
+	                coordinateX.push(tempX);
+	                coordinateY.push(tempY);
+	                boxArea.push(tempArea);
+                }
+            }
+
+            var regressionX = methods.linear(coordinateX, { order: 3, precision: 3, period: null });
+            var regressionY = methods.linear(coordinateY, { order: 3, precision: 3, period: null });
+            var regression_area = methods.linear(boxArea, { order: 3, precision: 3, period: null });
+            var ratio = 0.1
+            if (regressionX.r2 < 0.5){
+
+            	var xindex = [];
+            	var xvalue = [];
+                console.log("X regression r2 < 0.5 ... ");
+                for (var j in anno1){
+                	if( (anno1[j].occluded == false) && (anno1[j].outside == false)){
+			            xindex.push(j);
+			            var midx = (parseInt(anno1[j].xtl) + parseInt(anno1[j].xbr)) / 2.0;
+			            //console.log(midx);
+			            //console.log(regressionX.predict(parseInt(j))[1]);
+	                    xvalue.push(parseInt(Math.abs(regressionX.predict(parseInt(j))[1] - midx).toFixed(2) * 100));
+                    }
+                }
+            	console.log(xindex);
+            	console.log(xvalue);
+                var times = parseInt(xindex.length * ratio);
+                console.log(times);
+                for (var n=0; n<times; n++){
+                	
+
+                	var index = xvalue.indexOf(Math.max(...xvalue));
+                	console.log(Math.max(...xvalue));
+                	console.log(index);
+                	console.log(xindex[index]); // object frame 
+                	if (DPlog[i+"_"+xindex[index]] == 1){
+                		continue;
+                	}
+                	DPlog[i+"_"+xindex[index]] = 1;
+
+                	if(caseDisplacement % 5 == 0){
+	                    DPTrID = "DP"+caseDisplacement.toString();
+	                    $("#mergeTable").append("<tr id=\"" + DPTrID + "\" style= \"height : 100px; \"></tr>"); //track1frame1
+                    }
+
+                    var toFrame = "path_" + i.toString() + "_To" + xindex[index].toString();
+                    var frameURL = job.frameurl(xindex[index].toString());
+
+                    var trackImg1 = i.toString() + "_" + xindex[index].toString() + caseDisplacement;
+
+                    $("#" + DPTrID ).append("<td>" + job.labels[me.tracks[i].label] + (parseInt(i)+1).toString() + "<div id=\"" + trackImg1 +"\" style= \"width : 100px; height : 100px; overflow: hidden\"></div> </td>");
+                    $("#" + DPTrID ).append("<td><div class = \"btn-group\"><button id='"+ toFrame +"'>To" + xindex[index] + "</button> </div></td>");
+
+                    var scaleX = 100 / (parseInt(this.tracks[i].estimate(xindex[index].toString()).xbr) - parseInt(this.tracks[i].estimate(xindex[index].toString()).xtl));
+                    var scaleY = 100 / (parseInt(this.tracks[i].estimate(xindex[index].toString()).ybr) - parseInt(this.tracks[i].estimate(xindex[index].toString()).ytl));
+                    var style = "style = \"width :"+ (scaleX*parseInt(job.width)).toString() +"; height:" +(scaleY*parseInt(job.height)).toString() +"; margin-left : "+ (-Math.round(scaleX * parseInt(this.tracks[i].estimate(xindex[index].toString()).xtl))).toString()+"; margin-top : " + (-Math.round(scaleY * parseInt(this.tracks[i].estimate(xindex[index].toString()).ytl))).toString()+";\"";
+			        
+			        $('<img class ="'+trackImg1+'"src="'+ frameURL +'"'+style +'>').load(function() {    // load i
+			            $(this).appendTo("#" + $(this).attr("class"));
+			        });
+			        
+			        $("#"+toFrame).click(function() { // change to that frame
+		                me.player.seek($(this).attr('id').split("o")[1]);
+		                console.log($(this).attr('id'));
+		                $('html, body').scrollTop(0);
+		                DPCount++;
+                    });
+
+                	xvalue.splice(index, 1);
+                	xindex.splice(index, 1);
+                	caseDisplacement++;
+
+                }
+            }
+            if (regressionY.r2 < 0.5){
+            	var xindex = [];
+            	var xvalue = [];
+                console.log("X regression r2 < 0.5 ... ");
+                for (var j in anno1){
+                	if( (anno1[j].occluded == false) && (anno1[j].outside == false)){
+			            xindex.push(j);
+			            var midx = (parseInt(anno1[j].ytl) + parseInt(anno1[j].ybr)) / 2.0;
+			            //console.log(midx);
+			            //console.log(regressionX.predict(parseInt(j))[1]);
+	                    xvalue.push(parseInt(Math.abs(regressionX.predict(parseInt(j))[1] - midx).toFixed(2) * 100));
+                    }
+                }
+            	console.log(xindex);
+            	console.log(xvalue);
+                var times = parseInt(xindex.length * ratio);
+                console.log(times);
+                for (var n=0; n<times; n++){
+
+                	var index = xvalue.indexOf(Math.max(...xvalue));
+                	console.log(Math.max(...xvalue));
+                	console.log(index);
+                	console.log(xindex[index]); // object frame 
+
+                	if (DPlog[i+"_"+xindex[index]] == 1){
+                		continue;
+                	}
+                	DPlog[i+"_"+xindex[index]] = 1;
+
+                	if(caseDisplacement % 5 == 0){
+	                    DPTrID = "DP"+caseDisplacement.toString();
+	                    $("#mergeTable").append("<tr id=\"" + DPTrID + "\" style= \"height : 100px; \"></tr>"); //track1frame1
+                    }
+
+                    var toFrame = "path_" + i.toString() + "_To" + xindex[index].toString();
+                    var frameURL = job.frameurl(xindex[index].toString());
+
+                    var trackImg1 = i.toString() + "_" + xindex[index].toString() + caseDisplacement;
+
+                    $("#" + DPTrID ).append("<td>" + job.labels[me.tracks[i].label] + (parseInt(i)+1).toString() + "<div id=\"" + trackImg1 +"\" style= \"width : 100px; height : 100px; overflow: hidden\"></div> </td>");
+                    $("#" + DPTrID ).append("<td><div class = \"btn-group\"><button id='"+ toFrame +"'>To" + xindex[index] + "</button> </div></td>");
+
+                    var scaleX = 100 / (parseInt(this.tracks[i].estimate(xindex[index].toString()).xbr) - parseInt(this.tracks[i].estimate(xindex[index].toString()).xtl));
+                    var scaleY = 100 / (parseInt(this.tracks[i].estimate(xindex[index].toString()).ybr) - parseInt(this.tracks[i].estimate(xindex[index].toString()).ytl));
+                    var style = "style = \"width :"+ (scaleX*parseInt(job.width)).toString() +"; height:" +(scaleY*parseInt(job.height)).toString() +"; margin-left : "+ (-Math.round(scaleX * parseInt(this.tracks[i].estimate(xindex[index].toString()).xtl))).toString()+"; margin-top : " + (-Math.round(scaleY * parseInt(this.tracks[i].estimate(xindex[index].toString()).ytl))).toString()+";\"";
+			        
+			        $('<img class ="'+trackImg1+'"src="'+ frameURL +'"'+style +'>').load(function() {    // load i
+			            $(this).appendTo("#" + $(this).attr("class"));
+			        });
+			        
+			        $("#"+toFrame).click(function() { // change to that frame
+		                me.player.seek($(this).attr('id').split("o")[1]);
+		                console.log($(this).attr('id'));
+		                $('html, body').scrollTop(0);
+		                DPCount++;
+                    });
+
+                	xvalue.splice(index, 1);
+                	xindex.splice(index, 1);
+                	caseDisplacement++;
+
+                }
+            	
+            }
+            if (regression_area.r2 < 0.5){
+            	var xindex = [];
+            	var xvalue = [];
+                console.log("X regression r2 < 0.5 ... ");
+                for (var j in anno1){
+                	if( (anno1[j].occluded == false) && (anno1[j].outside == false)){
+			            xindex.push(j);
+			            var midx = (parseInt(anno1[j].xbr) - parseInt(anno1[j].xtl)) * (parseInt(anno1[j].ybr) - parseInt(anno1[j].ytl));
+			            //console.log(midx);
+			            //console.log(regressionX.predict(parseInt(j))[1]);
+	                    xvalue.push(parseInt(Math.abs(regressionX.predict(parseInt(j))[1] - midx).toFixed(2) * 100));
+                    }
+                }
+            	console.log(xindex);
+            	console.log(xvalue);
+                var times = parseInt(xindex.length * ratio);
+                console.log(times);
+                for (var n=0; n<times; n++){
+
+                	var index = xvalue.indexOf(Math.max(...xvalue));
+                	console.log(Math.max(...xvalue));
+                	console.log(index);
+                	console.log(xindex[index]); // object frame 
+
+                	if (DPlog[i+"_"+xindex[index]] == 1){
+                		continue;
+                	}
+                	DPlog[i+"_"+xindex[index]] = 1;
+
+                	if(caseDisplacement % 5 == 0){
+	                    DPTrID = "DP"+caseDisplacement.toString();
+	                    $("#mergeTable").append("<tr id=\"" + DPTrID + "\" style= \"height : 100px; \"></tr>"); //track1frame1
+                    }
+
+                    var toFrame = "path_" + i.toString() + "_To" + xindex[index].toString();
+                    var frameURL = job.frameurl(xindex[index].toString());
+
+                    var trackImg1 = i.toString() + "_" + xindex[index].toString() + caseDisplacement;
+
+                    $("#" + DPTrID ).append("<td>" + job.labels[me.tracks[i].label] + (parseInt(i)+1).toString() + "<div id=\"" + trackImg1 +"\" style= \"width : 100px; height : 100px; overflow: hidden\"></div> </td>");
+                    $("#" + DPTrID ).append("<td><div class = \"btn-group\"><button id='"+ toFrame +"'>To" + xindex[index] + "</button> </div></td>");
+
+                    var scaleX = 100 / (parseInt(this.tracks[i].estimate(xindex[index].toString()).xbr) - parseInt(this.tracks[i].estimate(xindex[index].toString()).xtl));
+                    var scaleY = 100 / (parseInt(this.tracks[i].estimate(xindex[index].toString()).ybr) - parseInt(this.tracks[i].estimate(xindex[index].toString()).ytl));
+                    var style = "style = \"width :"+ (scaleX*parseInt(job.width)).toString() +"; height:" +(scaleY*parseInt(job.height)).toString() +"; margin-left : "+ (-Math.round(scaleX * parseInt(this.tracks[i].estimate(xindex[index].toString()).xtl))).toString()+"; margin-top : " + (-Math.round(scaleY * parseInt(this.tracks[i].estimate(xindex[index].toString()).ytl))).toString()+";\"";
+			        
+			        $('<img class ="'+trackImg1+'"src="'+ frameURL +'"'+style +'>').load(function() {    // load i
+			            $(this).appendTo("#" + $(this).attr("class"));
+			        });
+			        
+			        $("#"+toFrame).click(function() { // change to that frame
+		                me.player.seek($(this).attr('id').split("o")[1]);
+		                console.log($(this).attr('id'));
+		                $('html, body').scrollTop(0);
+		                DPCount++;
+                    });
+
+                	xvalue.splice(index, 1);
+                	xindex.splice(index, 1);
+                	caseDisplacement++;
+
                 }
                 
             }
         }
+
+    	//console.log("test displacement event");
+    	//console.log(me.tracks);
+
     }
-    
+
+
+    /*
+     * Updates boxes with the given frame
+     */
+    this.update = function(frame)
+    {
+        //$('#mergeArea').empty();
+        for (var i in this.tracks)
+        {
+            this.tracks[i].draw(frame);
+            if(stage == 0){
+                for (var j in this.tracks){
+                    this.mergeEventDetect1(frame, i, j);  // type 1 merge
+                }
+            }
+            else if (stage == 1){ // type 2 merge
+                for (var j in this.tracks){
+                    this.mergeEventDetect2(frame, i, j);
+                }
+            }
+            else if (stage == 2){ // FP case
+                this.FPEvent(frame, i);
+            }
+            else if (stage == 3){ // disappear case
+                this.disappearEvent(frame, i);
+
+            }
+            else if (stage == 4){
+            	this.displacementEvent(frame, i);
+
+            }
+        }
+        //console.log(caseMerge1);
+    }
+
+
+
+
+
     this.overlapRatio = function(K, L, M, N, P, Q, R, S){
       	var area1 = (M - K) * (N - L);
       	var area2 = (R - P) * (S - Q);
@@ -402,11 +1278,11 @@ function TrackCollection(player, job)
       		overlap = 0;
       	}
       	else{
-      		    blX = Math.max(K, P);
-              blY = Math.max(L, Q);
-              trX = Math.min(M, R);
-              trY = Math.min(N, S);
-              overlap = (trX - blX) * (trY - blY);
+            blX = Math.max(K, P);
+            blY = Math.max(L, Q);
+            trX = Math.min(M, R);
+            trY = Math.min(N, S);
+            overlap = (trX - blX) * (trY - blY);
       	}
       	return overlap / (area1 + area2 - overlap);
     }
@@ -746,7 +1622,7 @@ function Track(player, color, position)
      */
     this.draw = function(frame, position)
     {
-        
+
         if (this.handle == null)
         {
             this.handle = $('<div class="boundingbox"><div class="boundingboxtext"></div></div>');
@@ -778,7 +1654,7 @@ function Track(player, color, position)
                     //var currentFraeme = parseInt($(#))
                     var changedObject = this.outerText;
                     changedObject = changedObject.split(" ")[0] + changedObject.split(" ")[1]; // delete the space
-                    
+
                     if (currentFrame.toString() in doubtFrame){ // if this frame contains suspected objects
                         //console.log(doubtFrame[currentFrame] + doubtFrame[currentFrame].length);
                         for (var i=0; i<doubtFrame[currentFrame].length; i++){
@@ -788,7 +1664,7 @@ function Track(player, color, position)
                             }
                         }
                     }
-                    me.fixposition();
+                    me.fixposition(); //Fixes the position to force box to be inside frame.
                     me.recordposition();
                     me.notifyupdate();
                     eventlog("resizable", "Resize a box");
@@ -811,7 +1687,7 @@ function Track(player, color, position)
                     //var currentFraeme = parseInt($(#))
                     var changedObject = this.outerText;
                     changedObject = changedObject.split(" ")[0] + changedObject.split(" ")[1]; // delete the space
-                    
+
                     if (currentFrame.toString() in doubtFrame){ // if this frame contains suspected objects
                         //console.log(doubtFrame[currentFrame] + doubtFrame[currentFrame].length);
                         for (var i=0; i<doubtFrame[currentFrame].length; i++){
@@ -823,7 +1699,7 @@ function Track(player, color, position)
                     }
                     console.log(changedObject, currentFrame);
                     console.log(doubtFrame);
-                    me.fixposition();
+                    me.fixposition(); // Fixes the position to force box to be inside frame.
                     me.recordposition();
                     me.notifyupdate();
                     eventlog("draggable", "Drag-n-drop a box");
@@ -859,6 +1735,7 @@ function Track(player, color, position)
         if (position == null)
         {
             position = this.estimate(frame);
+			//console.log(position);
         }
 
         if (position.outside)
@@ -1066,6 +1943,7 @@ function Track(player, color, position)
         return new Position(xtl, ytl, xbr, ybr, occluded, outside);
     }
 
+
     this.draw(this.player.frame);
 }
 
@@ -1195,6 +2073,9 @@ function Journal(start, blowradius)
         }
 
         console.log(regressionY);
+
+
+
 
         // Update to new annotation
 

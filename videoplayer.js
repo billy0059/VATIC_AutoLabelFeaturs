@@ -11,7 +11,7 @@ function VideoPlayer(handle, job)
     this.job = job;
     this.frame = job.start;
     this.paused = true;
-    this.fps = 30;
+    this.fps = 10;
     this.playdelta = 1;
 
     this.onplay = []; 
@@ -110,6 +110,7 @@ function VideoPlayer(handle, job)
 
         
         var url = this.job.frameurl(this.frame);
+		//console.log(url);
         this.handle.css("background-image", "url('" + url + "')");
 
         this._callback(this.onupdate);

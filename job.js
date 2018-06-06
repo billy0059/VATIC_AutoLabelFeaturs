@@ -27,9 +27,11 @@ function job_import(data)
 {
     var job = new Job();
     console.log(data["slug"]);
-    if(data["slug"].indexOf("Raw") == -1){
+	
+    if((data["slug"].indexOf("Raw") == -1) && (data["slug"].indexOf("kitti") == -1)){  // if the name doesn't contain "Raw", load the machine labeled frames
         doubtFrameSet(data["slug"]);
     }
+	
     job.slug = data["slug"]; // name of the job
     job.start = parseInt(data["start"]);
     job.stop = parseInt(data["stop"]);
@@ -68,6 +70,7 @@ function job_import(data)
             console.log("    " + job.labels[i] + " = " + job.attributes[i][j])
         }
     }
+	console.log(job);
 
     return job;
 }

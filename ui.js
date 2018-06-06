@@ -4,10 +4,13 @@ var ui_disabled = 0;
 
 function ui_build(job)
 {
+	
     var screen = ui_setup(job);
     var videoframe = $("#videoframe");
     var player = new VideoPlayer(videoframe, job);
-    var tracks = new TrackCollection(player, job);
+	//console.log(palyer);
+    var tracks = new TrackCollection(player, job); // all track pathes are in tracks!
+	
     var objectui = new TrackObjectUI($("#newobjectbutton"), $("#objectcontainer"), videoframe, job, player, tracks);
 
     ui_setupbuttons(job, player, tracks);
@@ -15,7 +18,14 @@ function ui_build(job)
     ui_setupsubmit(job, tracks);
     ui_setupclickskip(job, player, tracks, objectui);
     ui_setupkeyboardshortcuts(job, player);
-    ui_loadprevious(job, objectui);
+    ui_loadprevious(job, objectui); // async: false, enable synchronous for $.ajax !!!
+	
+    /* 
+	 *
+	 * Load the initial doubt frame from tracks
+	 */
+	 
+	dynamicDoubtFrameSet(tracks, job);
 
     $("#newobjectbutton").click(function() {
         if (!mturk_submitallowed())
@@ -23,6 +33,8 @@ function ui_build(job)
             $("#turkic_acceptfirst").effect("pulsate");
         }
     });
+	
+	
 }
 
 
@@ -87,10 +99,11 @@ function ui_setup(job)
               "<td><div id='submitbar'></div></td>" +
           "</tr>" +
           
-          "<tr>" +
-              "<td><div id='mergeaArea'></div></td>" +
+          /*"<tr style= \"width : 100px; height : 100px\">" +
+              "<td style= \"width : 100px; height : 100px\"><div id='mergeArea'><p> This is merge area </p></div></td>" +
+              "" + 
               "<td><div id='waiting'></div></td>" +
-          "</tr>" +
+          "</tr>" +*/
 
           // button to specific frame
           //"<tr>" +
@@ -558,16 +571,20 @@ function ui_loadprevious(job, objectui)
     var overlay = $('<div id="turkic_overlay"></div>').appendTo("#container");
     var note = $("<div id='submitdialog'>One moment...</div>").appendTo("#container");
 
-    server_request("getboxesforjob", [job.jobid], function(data) {
+    server_request("getboxesforjob", [job.jobid], function(data) { // callback
         overlay.remove();
         note.remove();
-
+		
+        //dynamicDoubtFrameSet(data);
+		
         for (var i in data)
         {
             objectui.injectnewobject(data[i]["label"],
                                      data[i]["boxes"],
                                      data[i]["attributes"]);
         }
+		
+		//console.log(data);
     });
 }
 
@@ -633,7 +650,9 @@ function ui_submit(job, tracks)
 
     function respawnjob(callback)
     {
+		//console.log("respawnjob");
         server_request("respawnjob", [job.jobid], function() {
+			console.log("respawnjob");
             callback();
         });
     }
